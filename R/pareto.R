@@ -11,8 +11,7 @@ totalencounters <- as.numeric(totalencounters)
 KUBlue = "#0022B4"
 SkyBlue = "#6DC6E7"
 par(col.axis="black" ,col.lab=KUBlue ,col.main=KUBlue ,col.sub=KUBlue, col=KUBlue,new = TRUE) #bg=SkyBlue)
-if (type=="p" || type=="P")
-	{
+if (type=="p" || type=="P")	{
 	count <- as.numeric(x [,2])
 	names(count) <- x [,1]
 	# 2018-04-01 removed col=SkyBlue, 
@@ -23,9 +22,7 @@ if (type=="p" || type=="P")
 	#mtext("Causes of non-conformity sorted by frequency", side=3, line=0.5, col=KUBlue , cex=1.5)
 	mtext("Barriers", side=1, line=4, col=KUBlue , cex=1.5)
 	if(theme=="KU"){display_logo(x=1.2,y=0.05)}
-	}
-else if (type=="b" || type=="B")
-	{
+} else if (type=="b" || type=="B") {
 	#plot(c(0, dev.size("px")[1]), c(0, dev.size("px")[2]),axes=F,type="b",xlab="", ylab = "", new = TRUE) # needed if rasterimage later adds anything
 	Myframe <- as.data.frame(x)
 	Myframe$count<-as.numeric(as.character(Myframe$count))
@@ -41,8 +38,7 @@ else if (type=="b" || type=="B")
 		theme(axis.text = element_text(colour = KUBlue))+
 		theme(axis.title = element_text(colour = KUBlue))
 	}
-else # Cascade
-	{
+else { # Cascade
 	#plot(c(0, dev.size("px")[1]), c(0, dev.size("px")[2]),axes=F,type="b",xlab="", ylab = "", new = TRUE) # needed if rasterimage later adds anything
 	Myframe <- as.data.frame(x)
 	Myframe$count<-as.numeric(as.character(Myframe$count))
