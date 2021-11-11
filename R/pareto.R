@@ -24,7 +24,7 @@ if (type=="p" || type=="P")
 	mtext("Barriers", side=1, line=4, col=KUBlue , cex=1.5)
 	if(theme=="KU"){display_logo(x=1.2,y=0.05)}
 	}
-else
+else if (type=="b" || type=="B")
 	{
 	#plot(c(0, dev.size("px")[1]), c(0, dev.size("px")[2]),axes=F,type="b",xlab="", ylab = "", new = TRUE) # needed if rasterimage later adds anything
 	Myframe <- as.data.frame(x)
@@ -37,6 +37,23 @@ else
 		theme(plot.background = element_rect(fill = "#FFFFFF")) + ylim(0,totalencounters) +
 		#ggtitle(expression(atop(topic, atop("Causes of non-conformity sorted by frequency", "")))) + 
 		#labs(title = "Causes of non-conformity sorted by count") + 
+		theme(plot.title = element_text(size = rel(3),face="bold",colour = KUBlue))  +
+		theme(axis.text = element_text(colour = KUBlue))+
+		theme(axis.title = element_text(colour = KUBlue))
+	}
+else # Cascade
+	{
+	#plot(c(0, dev.size("px")[1]), c(0, dev.size("px")[2]),axes=F,type="b",xlab="", ylab = "", new = TRUE) # needed if rasterimage later adds anything
+	Myframe <- as.data.frame(x)
+	Myframe$count<-as.numeric(as.character(Myframe$count))
+	totalencounters <- max(Myframe$count, totalencounters)
+	ggplot(Myframe, 
+		geom_bar(fill = SkyBlue,stat="identity") + xlab("")+ ylab("Count") + 
+		theme(axis.title.x = element_text(size = rel(2), face="bold", angle = 0)) + 
+		theme(axis.title.y = element_text(size = rel(2), face="bold", angle = 90)) + 
+		theme(plot.background = element_rect(fill = "#FFFFFF")) + ylim(0,totalencounters) +
+		ggtitle(expression(atop(topic, atop("Cascade chart", "")))) + 
+		#labs(title = "Causes of non-conformity sorted by timing") + 
 		theme(plot.title = element_text(size = rel(3),face="bold",colour = KUBlue))  +
 		theme(axis.text = element_text(colour = KUBlue))+
 		theme(axis.title = element_text(colour = KUBlue))
