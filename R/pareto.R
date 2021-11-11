@@ -43,6 +43,10 @@ if (type=="p" || type=="P")	{
 	Myframe <- as.data.frame(x)
 	Myframe$count<-as.numeric(as.character(Myframe$count))
 	totalencounters <- max(Myframe$count, totalencounters)
+	#Turn your 'Reason' column into a character vector
+	Myframe$Reason <- as.character(Myframe$Reason)
+	#Then turn Reason back into a factor with the levels in the correct order
+	Myframe$Reason <- factor(Myframe$Reason, levels=unique(Myframe$Reason))
 	ggplot(Myframe,  aes(x = Reason, y = count)) + 
 		geom_bar(fill = SkyBlue,stat="identity") + xlab("")+ ylab("Count") + 
 		theme(axis.title.x = element_text(size = rel(2), face="bold", angle = 0)) + 
