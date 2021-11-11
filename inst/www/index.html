@@ -65,8 +65,10 @@ $(document).ready(function(){
 
     $(".example").click(function(){
 	if($(this).val()=="ex_1") {$("#type").val("p");$("#totalencounters").css("display","none");;editor.setValue("'Non-parsable', 7,\n'Refused (cost)', 4,\n'Refused (other)', 4,\n'No documentation', 8,\n'Not PCP encounter', 1",1);}
-	if($(this).val()=="ex_2") {$("#type").val("p");$("#totalencounters").css("display","none");;editor.setValue("'Non-parsable', 7,\n'Refused (cost)', 4,\n'Refused (other)', 4,\n'No documentation', 8,\n'Not PCP encounter', 9",1);}
-	if($(this).val()=="ex_3") {$("#type").val("b");$("#totalencounters").css("display","inline");$("#totalencounters").val(24);;editor.setValue("'Non-parsable', 7,\n'Refused (cost)', 4,\n'Refused (other)', 4,\n'No documentation', 8,\n'Not PCP encounter', 9",1);}
+	if($(this).val()=="ex_2a") {$("#type").val("p");$("#totalencounters").css("display","none");;editor.setValue("'Non-parsable', 7,\n'Refused (cost)', 4,\n'Refused (other)', 4,\n'No documentation', 8,\n'Not PCP encounter', 9",1);}
+	if($(this).val()=="ex_2b") {$("#type").val("b");$("#totalencounters").css("display","inline");$("#totalencounters").val(24);;editor.setValue("'Non-parsable', 7,\n'Refused (cost)', 4,\n'Refused (other)', 4,\n'No documentation', 8,\n'Not PCP encounter', 9",1);}
+	if($(this).val()=="ex_3a") {$("#type").val("b");$("#topic").val("Annual wellness visit barriers");$("#totalencounters").css("display","none");$("#totalencounters").val(39);;editor.setValue("'Medicare', 39,\n'Not web-enabled', 21,\n'q.Portal survey not used', 11,\n'q.Portal survey not imported', 4,\n'q.Survey final item no answered', 0",1);}
+	if($(this).val()=="ex_3b") {$("#type").val("c");$("#topic").val("Annual wellness visits");$("#totalencounters").css("display","none");$("#totalencounters").val(39);;editor.setValue("'Medicare', 39,\n'Web-enabled', 18,\n'q.Portal survey used', 7,\n'q.Portal survey imported', 3,\n'q.Survey final item answered', 3",1);}
   });
   
   //init on start
@@ -219,12 +221,22 @@ color:#FFFFFF;
 				<li>This is also stated as, 20% of sources leads to 80% of outcomes.</li>
 			</ul>
 		<h3 style="margin-bottom:0px">Scenario 2</h3>
-		<div><input type="radio" name="example" class="example" value="ex_2" id="ex_2"/><label for="ex_2">The same 24 encounters, but now more than one reason was allowed and counted for each encounter.</label></div>
+		<div><input type="radio" name="example" class="example" value="ex_2a" id="ex_2a"/><label for="ex_2a">The same 24 encounters, but now more than one reason was allowed and counted for each encounter.</label></div>
 			<ul>
 				<li><i>'Not PCP encounter' (bottom row) has risen to 9 occurrences because none of the non-PCP encounters documented reasons.</i></li>
 				<li>Why did the percentage due to 'No documentation' fall and "Not PCP encounter" becomes the most common reason? Do the percentages correctly identify the fractions of encounters?</li>
 			</ul>
-		<div><input type="radio" name="example" class="example" value="ex_3" id="ex_3"/><label for="ex_3">The same scenario, but now a sorted bar chart is created.</label></div>
+		<div><input type="radio" name="example" class="example" value="ex_2b" id="ex_2b"/><label for="ex_2b">The same scenario, but now a sorted bar chart is created.</label></div>
+			<ul>
+				<li>When more than one reason was allowed to be counted per encounter, which type of chart is more helpful?</li>
+			</ul>
+		<h3 style="margin-bottom:0px">Scenario 3</h3>
+		<div><input type="radio" name="example" class="example" value="ex_3a" id="ex_3a"/><label for="ex_3a">39 adult patients insured by Medicare who were seen for their annual wellness visits (AWV) with their primary care.</label></div>
+			<ul>
+				<li><i>'Not PCP encounter' (bottom row) has risen to 9 occurrences because none of the non-PCP encounters documented reasons.</i></li>
+				<li>Why did the percentage due to 'No documentation' fall and "Not PCP encounter" becomes the most common reason? Do the percentages correctly identify the fractions of encounters?</li>
+			</ul>
+		<div><input type="radio" name="example" class="example" value="ex_3b" id="ex_3b"/><label for="ex_3b">The same scenario, but now a sorted bar chart is created.</label></div>
 			<ul>
 				<li>When more than one reason was allowed to be counted per encounter, which type of chart is more helpful?</li>
 			</ul>
