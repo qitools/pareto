@@ -32,7 +32,7 @@ if (type=="p" || type=="P")	{
 		theme(axis.title.x = element_text(size = rel(2), face="bold", angle = 0)) + 
 		theme(axis.title.y = element_text(size = rel(2), face="bold", angle = 90)) + 
 		theme(plot.background = element_rect(fill = "#FFFFFF")) + ylim(0,totalencounters) +
-		ggtitle(bquote(atop(.(topic), atop(italic('Bar chart (sorted by frequency'), "")))) 
+		#ggtitle(bquote(atop(.(topic), atop(italic('Bar chart (sorted by frequency'), "")))) 
 		#ggtitle(expression(atop(topic, atop("Causes of non-conformity sorted by frequency", "")))) + 
 		labs(title = topic,  subtitle = "Bar chart (sorted by frequency)") + 
 		theme(plot.title = element_text(size = rel(3),face="bold",colour = KUBlue))  +
