@@ -42,7 +42,7 @@ if (type=="p" || type=="P")	{
 	Myframe <- as.data.frame(x)
 	Myframe$count<-as.numeric(as.character(Myframe$count))
 	totalencounters <- max(Myframe$count, totalencounters)
-	ggplot(Myframe, 
+	ggplot(Myframe,  aes(x = Reason, y = count)) + 
 		geom_bar(fill = SkyBlue,stat="identity") + xlab("")+ ylab("Count") + 
 		theme(axis.title.x = element_text(size = rel(2), face="bold", angle = 0)) + 
 		theme(axis.title.y = element_text(size = rel(2), face="bold", angle = 90)) + 
