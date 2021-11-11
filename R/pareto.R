@@ -37,8 +37,7 @@ if (type=="p" || type=="P")	{
 		theme(plot.title = element_text(size = rel(3),face="bold",colour = KUBlue))  +
 		theme(axis.text = element_text(colour = KUBlue))+
 		theme(axis.title = element_text(colour = KUBlue))
-	}
-else { # Cascade
+} else { # Cascade
 	#plot(c(0, dev.size("px")[1]), c(0, dev.size("px")[2]),axes=F,type="b",xlab="", ylab = "", new = TRUE) # needed if rasterimage later adds anything
 	Myframe <- as.data.frame(x)
 	Myframe$count<-as.numeric(as.character(Myframe$count))
