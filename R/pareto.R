@@ -1,4 +1,4 @@
-# Force payload delivery to openCPU    #  
+# Force payload delivery to openCPU  #  
 pareto <-
 function(content, topic, type, totalencounters, theme) {
 temp <- gsub('\n', '', fixed = TRUE, content, perl = TRUE)
