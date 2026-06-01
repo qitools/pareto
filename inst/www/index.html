@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>QI Tools: Pareto, cascade, and sorted bar charts.title>
+<title>QI Tools: Pareto, cascade, and sorted bar charts</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
@@ -48,10 +48,10 @@ https://cdn.opencpu.org/
 <script> 
 $(document).ready(function(){
 
-  //optional, requires jquery-ui.
-  $("#plotdiv").resizable()
+  // Use the R functions from this package, whether hosted through /ocpu/github/ or /ocpu/library/.
+  ocpu.seturl("../R");
 
-  //For Ajax.org Cloud9 Editor
+//For Ajax.org Cloud9 Editor
   var editor = ace.edit("editor");
   editor.setTheme("ace/theme/github");
   editor.getSession().setMode("ace/mode/r");
@@ -60,18 +60,26 @@ $(document).ready(function(){
   
   // drawplot
   function drawplot(){
-    $("#plotbutton").attr("disabled", "disabled")
-	temp = editor.getSession().getValue()
-	//Three replacements below are not required on a local server, but are at https://public.opencpu.org/ocpu/github/
-	temp = temp.replace(/\r?\n/g, '')
-	temp = temp.replace(/\s+$/g, '')
-	temp = temp.replace(/,$/g, '')
-	var req = $('#target').contents().find('#plotdiv').r_fun_plot("pareto", {
-	  content: temp,
-	  topic : $("#topic").val(),
-	  type: $("#type").val(),
-	  total : $("#totalencounters").val(),
-	  theme : $("#theme").val()
+    $("#plotbutton").attr("disabled", "disabled");
+
+    var temp = editor.getSession().getValue();
+
+    // These cleanup steps help when the app is served through /ocpu/github/.
+    temp = temp.replace(/\r?\n/g, '');
+    temp = temp.replace(/\s+$/g, '');
+    temp = temp.replace(/,$/g, '');
+
+    var req = ocpu.call("pareto", {
+      content: temp,
+      topic: $("#topic").val(),
+      type: $("#type").val(),
+      totalencounters: Number($("#totalencounters").val()) || 0,
+      theme: $("#theme").val()
+    }, function(session){
+      $("#target").attr(
+        "src",
+        session.getLoc() + "graphics/1/png?width=1000&height=600"
+      );
     }).always(function(){
       $("#plotbutton").removeAttr("disabled");
     }).fail(function(){
@@ -222,7 +230,7 @@ color:#FFFFFF;
             <label>Topic (for title - optional):</label> 
             <input type="text" id="topic" value="Pareto analysis:"/> 
 
-            <input id="totalencounters" style="display:none" size="12" placeholder="Total encounters" type="text" id="total" /> 
+            <input id="totalencounters" style="display:none" size="12" placeholder="Total encounters" type="text" /> 
 
             <div style="display:none"><label>Plot logo:</label> 
             <select id="theme">
