@@ -11,105 +11,168 @@ https://www.opencpu.org/jslib.html
 https://cdn.opencpu.org/
 -->
 
-<!-- jquery -->
-<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+<!-- jQuery: use the same version pattern that is working in the charts package -->
+<script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
 
 <!-- tooltip -->
 <script type="text/javascript" src="qtip/jquery.qtip.min.js"></script>
 <link rel="stylesheet" type="text/css" href="qtip/jquery.qtip.min.css" />
 
-<!-- ocpu library -->
-<script src="opencpu/opencpu-0.4.js"> </script>
+<!-- Bootstrap, if present in the package -->
+<script src="bootstrap/js/bootstrap.js"></script>
 
-<!-- some optional styling stuff -->
-<!-- 
-<link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
--->
-<link href="jqueryui/css/ui-lightness/jquery-ui-1.10.3.custom.css" rel="stylesheet" media="screen"> 
-
-<script src="bootstrap/js/bootstrap.js"> </script>
-<script src="jqueryui/jquery-ui-1.10.3.custom.js"> </script>
+<!-- OpenCPU library -->
+<script src="opencpu/opencpu-0.4.js"></script>
 
 <!-- jquery-csv from http://code.google.com/p/jquery-csv/ -->
-<!-- <script src="https://jquery-csv.googlecode.com/git/src/jquery.csv.js"></script> -->
 <script src="jquery-csv/jquery.csv.js"></script>
 
-<!-- http://jqueryui.com/dialog/ -->
-  <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.js"></script>
-	
-<!-- Ajax.org Cloud9 Editor from http://ace.c9.io/#nav=api&api=editor -->
-<script src="src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
-	
-<!-- ocpu library -->
-<!--
-<script src="//cdn.opencpu.org/opencpu-0.4.js"></script>
--->
+<!-- jQuery UI from CDN; only used if successfully loaded -->
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"
+  integrity="sha256-lSjKY0/srUM9BE3dPm+c4fBo1dky2v27Gdjm2uoZaL0="
+  crossorigin="anonymous"></script>
 
-<script> 
+<script>
+// Use this package's R functions when served by OpenCPU.
+if (window.ocpu && typeof ocpu.seturl === "function") {
+  ocpu.seturl("../R");
+}
+
 $(document).ready(function(){
 
-  // Use the R functions from this package, whether hosted through /ocpu/github/ or /ocpu/library/.
-  ocpu.seturl("../R");
+  function htmlEscape(value) {
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
 
-//For Ajax.org Cloud9 Editor
-  var editor = ace.edit("editor");
-  editor.setTheme("ace/theme/github");
-  editor.getSession().setMode("ace/mode/r");
-  editor.setFontSize("14px");
-  editor.getSession().setUseWrapMode(true);
-  
-  // drawplot
+  function getEditorText() {
+    return $("#editor").val();
+  }
+
+  function setEditorText(value) {
+    $("#editor").val(value);
+  }
+
+  function showPlotMessage(message) {
+    $("#plotdiv").html(
+      '<div class="plot-message">' + htmlEscape(message) + '</div>'
+    );
+  }
+
+  // Optional resizing; only call it if jQuery UI loaded correctly.
+  if ($.fn && typeof $.fn.resizable === "function") {
+    $("#plotdiv").resizable();
+  }
+
   function drawplot(){
+    if (!(window.ocpu && typeof ocpu.call === "function")) {
+      showPlotMessage("OpenCPU JavaScript library did not load. The page can edit examples, but it cannot create a plot.");
+      return;
+    }
+
     $("#plotbutton").attr("disabled", "disabled");
+    showPlotMessage("Loading plot...");
 
-    var temp = editor.getSession().getValue();
+    var temp = getEditorText();
 
-    // These cleanup steps help when the app is served through /ocpu/github/.
+    // These cleanup steps help when the app is served through OpenCPU/GitHub.
     temp = temp.replace(/\r?\n/g, '');
     temp = temp.replace(/\s+$/g, '');
+    temp = temp.replace(/^\s+/g, '');
     temp = temp.replace(/,$/g, '');
+
+    var totalencounters = Number($("#totalencounters").val());
+    if (!isFinite(totalencounters) || totalencounters < 0) {
+      totalencounters = 0;
+    }
 
     var req = ocpu.call("pareto", {
       content: temp,
       topic: $("#topic").val(),
       type: $("#type").val(),
-      totalencounters: Number($("#totalencounters").val()) || 0,
+      totalencounters: totalencounters,
       theme: $("#theme").val()
     }, function(session){
-      $("#target").attr(
-        "src",
-        session.getLoc() + "graphics/1/png?width=1000&height=600"
+      $("#plotdiv").html(
+        '<img src="' + session.getLoc() + 'graphics/1/png?width=1000&height=600" alt="Pareto plot" style="max-width:100%; height:auto;">'
       );
-    }).always(function(){
+    });
+
+    req.fail(function(){
+      showPlotMessage("HTTP error " + req.status + ": " + req.responseText);
+    });
+
+    req.always(function(){
       $("#plotbutton").removeAttr("disabled");
-    }).fail(function(){
-      alert("HTTP error " + req.status + ": " + req.responseText);
     });
   }
 
-  //button handler
+  // Button handler
   $("#plotbutton").on("click", function(e){
     e.preventDefault();
     drawplot();
   });
 
-    $("#type").on("change", function(e){
+  // Chart type handler
+  $("#type").on("change", function(e){
     e.preventDefault();
-    if ($("#type").val() == "b"){$("#totalencounters").css("display","inline")}
-	else {$("#totalencounters").css("display","none")}
+    if ($("#type").val() == "b") {
+      $("#totalencounters").css("display", "inline");
+    } else {
+      $("#totalencounters").css("display", "none");
+    }
   });
 
-    $(".example").click(function(){
-	if($(this).val()=="ex_1") {$("#type").val("p");$("#topic").val("");$("#totalencounters").css("display","none");;editor.setValue("'Non-parsable', 7,\n'Refused (cost)', 4,\n'Refused (other)', 4,\n'No documentation', 8,\n'Not PCP encounter', 1",1);}
-	if($(this).val()=="ex_2a") {$("#type").val("p");$("#topic").val("");$("#totalencounters").css("display","none");;editor.setValue("'Non-parsable', 7,\n'Refused (cost)', 4,\n'Refused (other)', 4,\n'No documentation', 8,\n'Not PCP encounter', 9",1);}
-	if($(this).val()=="ex_2b") {$("#type").val("b");$("#topic").val("");$("#totalencounters").css("display","inline");$("#totalencounters").val(24);;editor.setValue("'Non-parsable', 7,\n'Refused (cost)', 4,\n'Refused (other)', 4,\n'No documentation', 8,\n'Not PCP encounter', 9",1);}
-	if($(this).val()=="ex_3a") {$("#type").val("p");$("#topic").val("Annual wellness visit barriers");$("#totalencounters").css("display","none");$("#totalencounters").val(33);;editor.setValue("'Patient \\nNot web-enabled', 16,\n'q.Portal survey \\nNot used', 11,\n'q.Survey final item \\nNot answered', 2,\n'q.Portal survey \\nNot imported', 0",1);}
-	if($(this).val()=="ex_3b") {$("#type").val("c");$("#topic").val("Annual wellness visits");$("#totalencounters").css("display","none");$("#totalencounters").val(33);;editor.setValue("'Medicare', 33,\n'Web-enabled', 17,\n'q.Portal survey used', 6,\n'q.Survey final item answered', 4,\n'q.Portal survey imported', 4",1);}
+  // Example scenario radio buttons
+  $(document).on("change click", ".example", function(e){
+    var selected = $(this).val();
+
+    if(selected == "ex_1") {
+      $("#type").val("p");
+      $("#topic").val("");
+      $("#totalencounters").css("display", "none");
+      setEditorText("'Non-parsable', 7,\n'Refused (cost)', 4,\n'Refused (other)', 4,\n'No documentation', 8,\n'Not PCP encounter', 1");
+    }
+
+    if(selected == "ex_2a") {
+      $("#type").val("p");
+      $("#topic").val("");
+      $("#totalencounters").css("display", "none");
+      setEditorText("'Non-parsable', 7,\n'Refused (cost)', 4,\n'Refused (other)', 4,\n'No documentation', 8,\n'Not PCP encounter', 9");
+    }
+
+    if(selected == "ex_2b") {
+      $("#type").val("b");
+      $("#topic").val("");
+      $("#totalencounters").css("display", "inline");
+      $("#totalencounters").val(24);
+      setEditorText("'Non-parsable', 7,\n'Refused (cost)', 4,\n'Refused (other)', 4,\n'No documentation', 8,\n'Not PCP encounter', 9");
+    }
+
+    if(selected == "ex_3a") {
+      $("#type").val("p");
+      $("#topic").val("Annual wellness visit barriers");
+      $("#totalencounters").css("display", "none");
+      $("#totalencounters").val(33);
+      setEditorText("'Patient \\nNot web-enabled', 16,\n'q.Portal survey \\nNot used', 11,\n'q.Survey final item \\nNot answered', 2,\n'q.Portal survey \\nNot imported', 0");
+    }
+
+    if(selected == "ex_3b") {
+      $("#type").val("c");
+      $("#topic").val("Annual wellness visits");
+      $("#totalencounters").css("display", "none");
+      $("#totalencounters").val(33);
+      setEditorText("'Medicare', 33,\n'Web-enabled', 17,\n'q.Portal survey used', 6,\n'q.Survey final item answered', 4,\n'q.Portal survey imported', 4");
+    }
   });
-  
-  //init on start
-  //drawplot();
-  
+
+  // init on start
+  // drawplot();
+
 });
 </script>
 <style>
@@ -121,17 +184,34 @@ margin-right: auto;
 margin-bottom: 0px;
 margin-left: auto;
 }
-#editor { 
+
+#editor {
   position: relative;
   width: 450px;
   height: 275px;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 14px;
+  line-height: 1.35;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+  padding: 8px;
+  resize: vertical;
+  box-sizing: border-box;
 }
-    
+
 #plotdiv {
   width: 1000px;
-  height: 400px;
-  border: 1px solid #e3e3e3;
+  min-height: 600px;
+  border: 3px solid #6DC6E7;
   border-radius: 4px;
+  background-color: #FFFFFF;
+  box-sizing: border-box;
+}
+
+.plot-message {
+  padding: 20px;
+  color: #0022B4;
+  font-weight: bold;
 }
 
 #plotbutton{
@@ -152,7 +232,7 @@ list-style-type:none;
 margin:0;
 padding:0;
 overflow:hidden;
-} 
+}
 
 .listitem
 {
@@ -185,54 +265,54 @@ color:#FFFFFF;
 
   <div class="container" style="width:1000px">
 
-	<div class="page-header">
-		<div  style="float:left;color:#0022B4">
-			<h1>QI Tools</h1>
-			<h2>Pareto, cascade, and sorted bar charts</h2>
-		</div>
-	</div>
-	<div style="clear:both"></div>
+  <div class="page-header">
+    <div  style="float:left;color:#0022B4">
+      <h1>QI Tools</h1>
+      <h2>Pareto, cascade, and sorted bar charts</h2>
+    </div>
+  </div>
+  <div style="clear:both"></div>
 
-	<ul id="menu">
-	<li class="listitem"><a href="../../home/www/" class="menuitem">Home</a></li>
-	<li class="listitem"><a href="../../ishikawa/www/" class="menuitem">Ishikawa<br/>diagram</a></li>
-	<li class="listitem"><a href="../../pareto/www/" class="menuitem">Pareto &amp; Sorted<br/>bar charts</a></li>
-	<li class="listitem"><a href="../../charts/www/" class="menuitem">Process control &amp; Run charts</a></li>
-	<li class="listitem"><a href="../../positivedeviance/www/" class="menuitem">Positive<br/>deviance</a></li>
-	<li class="listitem"><a href="../../processmap/www/" class="menuitem">Process maps</a></li>
-	<li class="listitem"><a href="../../home/www/measures.html" class="menuitem">Specific <br/>quality measures</a></li>
-	</ul>
-	<div id="">&nbsp;</div>
-	
+  <ul id="menu">
+  <li class="listitem"><a href="../../home/www/" target="_top" class="menuitem">Home</a></li>
+  <li class="listitem"><a href="../../ishikawa/www/" target="_top" class="menuitem">Ishikawa<br/>diagram</a></li>
+  <li class="listitem"><a href="../../pareto/www/" target="_top" class="menuitem">Pareto &amp; Sorted<br/>bar charts</a></li>
+  <li class="listitem"><a href="../../charts/www/" target="_top" class="menuitem">Process control &amp; Run charts</a></li>
+  <li class="listitem"><a href="../../positivedeviance/www/" target="_top" class="menuitem">Positive<br/>deviance</a></li>
+  <li class="listitem"><a href="../../processmap/www/" target="_top" class="menuitem">Process maps</a></li>
+  <li class="listitem"><a href="../../home/www/measures.html" target="_top" class="menuitem">Specific <br/>quality measures</a></li>
+  </ul>
+  <div id="">&nbsp;</div>
+
     <div class="row">
-		<!-- Left column -->
-		<div style="width:500px;float:left">
-			<form class="well" id="paramform" target="target" style="width:500px;">
-			<fieldset style="border: 3px solid #6DC6E7; background-color: #FFFFFF; width:500px;height:440px;">
-			<legend style="font-weight:bold">Enter inputs</legend>
-			<div>Replace the reasons and their counts in this example <a href="https://en.wikipedia.org/wiki/Pareto_chart">Pareto chart</a> with your observations.</div>
-			<div>Note that line breaks in names can be created by inserting '\n' into the line names.</div>
-			<div id="editor">'Non-parsable', 7,
+    <!-- Left column -->
+    <div style="width:500px;float:left">
+      <form class="well" id="paramform" style="width:500px;">
+      <fieldset style="border: 3px solid #6DC6E7; background-color: #FFFFFF; width:500px;height:440px;">
+      <legend style="font-weight:bold">Enter inputs</legend>
+      <div>Replace the reasons and their counts in this example <a href="https://en.wikipedia.org/wiki/Pareto_chart" target="_blank" rel="noopener noreferrer">Pareto chart</a> with your observations.</div>
+      <div>Note that line breaks in names can be created by inserting '\n' into the line names.</div>
+      <textarea id="editor">'Non-parsable', 7,
 'Refused \n(cost)', 4,
 'Refused \n(other)', 4,
 'No documentation', 8,
-'Not PCP encounter', 1</div>	
+'Not PCP encounter', 1</textarea>
             <br />
-            <label>Chart type</label> 
+            <label>Chart type</label>
             <select id="type">
               <option value="p" selected>Pareto chart</option>
               <option value="b">Bar chart (sorted by descending frequency)</option>
               <option value="c">Cascade chart (sorted by your order listing)</option>
             </select>
 
-	
+
             <br />
-            <label>Topic (for title - optional):</label> 
-            <input type="text" id="topic" value="Pareto analysis:"/> 
+            <label>Topic (for title - optional):</label>
+            <input type="text" id="topic" value="Pareto analysis:"/>
 
-            <input id="totalencounters" style="display:none" size="12" placeholder="Total encounters" type="text" /> 
+            <input id="totalencounters" style="display:none" size="12" placeholder="Total encounters" type="text" />
 
-            <div style="display:none"><label>Plot logo:</label> 
+            <div style="display:none"><label>Plot logo:</label>
             <select id="theme">
               <option value="white" selected>None</option>
               <option value="KU">KU</option>
@@ -242,50 +322,51 @@ color:#FFFFFF;
             <button class="btn btn-small btn-primary" id="plotbutton"><i class="icon-ok icon-white"></i> Update Plot</button>
           </fieldset>
         </form>
-	</div>
-	
-	<!-- Right column-->
+  </div>
+
+  <!-- Right column-->
     <div style="width:450px;float:right;background-color: #FFFFFF;">
-	<fieldset style="border: 3px solid #6DC6E7; background-color: #FFFFFF; width:450px;">
-		<legend style="font-weight:bold">Example scenarios</legend>
-		<h3 style="margin-bottom:0px">Scenario 1</h3>
-		<div><input type="radio" name="example" class="example" value="ex_1" id="ex_1" checked /><label for="ex_1">A review of 24 encounters in order to identify the principle reason for not be in conformity with the desired outcome.</label></div>
-			<ul>
-				<li>In this Pareto analysis, what proportion of nonconformity will be reduced if the most common cause is completed eliminated?</li>
-				<li>In this Pareto analysis, what proportion of nonconformity will be reduced if the <strong>two</strong> most common causes are completed eliminated?</li>
-				<li>In a Pareto analysis, what is the 'vital few' versus the 'trivial many'?</li>
-				<li>This is also stated as, 20% of sources leads to 80% of outcomes.</li>
-			</ul>
-		<h3 style="margin-bottom:0px">Scenario 2</h3>
-		<div><input type="radio" name="example" class="example" value="ex_2a" id="ex_2a"/><label for="ex_2a">The same 24 encounters, but now more than one reason was allowed and counted for each encounter.</label></div>
-			<ul>
-				<li><i>'Not PCP encounter' (bottom row) has risen to 9 occurrences because none of the non-PCP encounters documented reasons.</i></li>
-				<li>Why did the percentage due to 'No documentation' fall and "Not PCP encounter" becomes the most common reason? Do the percentages correctly identify the fractions of encounters?</li>
-			</ul>
-		<div><input type="radio" name="example" class="example" value="ex_2b" id="ex_2b"/><label for="ex_2b">The same scenario, but now a sorted bar chart is created.</label></div>
-			<ul>
-				<li>When more than one reason was allowed to be counted per encounter, which type of chart is more helpful?</li>
-			</ul>
-		<h3 style="margin-bottom:0px">Scenario 3</h3>
-		<div><input type="radio" name="example" class="example" value="ex_3a" id="ex_3a"/><label for="ex_3a">33 adult patients insured by Medicare who were seen for their annual wellness visits (AWV) with their primary care.</label></div>
-			<ul>
-				<li>What appears to be the most important barrier to completing their pre-clinic survey online?</li>
-			</ul>
-		<div><input type="radio" name="example" class="example" value="ex_3b" id="ex_3b"/><label for="ex_3b">The same scenario, but now a cascade chart is created.</label></div>
-			<ul>
-				<li>When the barriers happen in a time sequence, does this plot better identify opportunities?</li>
-				<li>Look at the relative drop at each step of the cascade. Every step loses over 50% of encounters!</li>
-				<li>Much more work to do than just get patients web-enabled.</li>
-			</ul>
-		</fieldset>
-	  </div>
-	
-	<div style="clear:both">&nbsp;</div>
-	
-	<iframe id="target" style="width:1000px;height:600px;border: 3px solid #6DC6E7;" name="target" width="700px" height="600px" src="output.html">
-	</iframe>
-	</div>
-	 
+  <fieldset style="border: 3px solid #6DC6E7; background-color: #FFFFFF; width:450px;">
+    <legend style="font-weight:bold">Example scenarios</legend>
+    <h3 style="margin-bottom:0px">Scenario 1</h3>
+    <div><input type="radio" name="example" class="example" value="ex_1" id="ex_1" checked /><label for="ex_1">A review of 24 encounters in order to identify the principle reason for not be in conformity with the desired outcome.</label></div>
+      <ul>
+        <li>In this Pareto analysis, what proportion of nonconformity will be reduced if the most common cause is completed eliminated?</li>
+        <li>In this Pareto analysis, what proportion of nonconformity will be reduced if the <strong>two</strong> most common causes are completed eliminated?</li>
+        <li>In a Pareto analysis, what is the 'vital few' versus the 'trivial many'?</li>
+        <li>This is also stated as, 20% of sources leads to 80% of outcomes.</li>
+      </ul>
+    <h3 style="margin-bottom:0px">Scenario 2</h3>
+    <div><input type="radio" name="example" class="example" value="ex_2a" id="ex_2a"/><label for="ex_2a">The same 24 encounters, but now more than one reason was allowed and counted for each encounter.</label></div>
+      <ul>
+        <li><i>'Not PCP encounter' (bottom row) has risen to 9 occurrences because none of the non-PCP encounters documented reasons.</i></li>
+        <li>Why did the percentage due to 'No documentation' fall and "Not PCP encounter" becomes the most common reason? Do the percentages correctly identify the fractions of encounters?</li>
+      </ul>
+    <div><input type="radio" name="example" class="example" value="ex_2b" id="ex_2b"/><label for="ex_2b">The same scenario, but now a sorted bar chart is created.</label></div>
+      <ul>
+        <li>When more than one reason was allowed to be counted per encounter, which type of chart is more helpful?</li>
+      </ul>
+    <h3 style="margin-bottom:0px">Scenario 3</h3>
+    <div><input type="radio" name="example" class="example" value="ex_3a" id="ex_3a"/><label for="ex_3a">33 adult patients insured by Medicare who were seen for their annual wellness visits (AWV) with their primary care.</label></div>
+      <ul>
+        <li>What appears to be the most important barrier to completing their pre-clinic survey online?</li>
+      </ul>
+    <div><input type="radio" name="example" class="example" value="ex_3b" id="ex_3b"/><label for="ex_3b">The same scenario, but now a cascade chart is created.</label></div>
+      <ul>
+        <li>When the barriers happen in a time sequence, does this plot better identify opportunities?</li>
+        <li>Look at the relative drop at each step of the cascade. Every step loses over 50% of encounters!</li>
+        <li>Much more work to do than just get patients web-enabled.</li>
+      </ul>
+    </fieldset>
+    </div>
+
+  <div style="clear:both">&nbsp;</div>
+
+  <div id="plotdiv">
+    <div class="plot-message">Click Update Plot to create the chart.</div>
+  </div>
+  </div>
+
     <div class="row">
       <div class="span12">
         <h3>About</h3>
@@ -293,12 +374,12 @@ color:#FFFFFF;
         <p>This is an OpenCPU application.</p>
         <table class="table table-striped">
           <tr><th>Resource</th> <th>link</th></tr>
-          <tr><td>Package Info</td> <td><a href=".." target="blank">link</a></td></tr>       
-          <tr><td>Function Source</td><td><a href="../R/pareto/print" target="blank">link</a></td><td></tr>
-          <tr><td>Source Code</td><td><a href="https://github.com/qitools/pareto" target="blank">link</a></td><td></tr>
-          <tr><td>Help Page (html)</td><td><a href="../man/qitools/html" target="blank">link</a></td><td></tr>
+          <tr><td>Package Info</td> <td><a href=".." target="_blank" rel="noopener noreferrer">link</a></td></tr>
+          <tr><td>Function Source</td><td><a href="../R/pareto/print" target="_blank" rel="noopener noreferrer">link</a></td><td></tr>
+          <tr><td>Source Code</td><td><a href="https://github.com/qitools/pareto" target="_blank" rel="noopener noreferrer">link</a></td><td></tr>
+          <tr><td>Help Page (html)</td><td><a href="../man/qitools/html" target="_blank" rel="noopener noreferrer">link</a></td><td></tr>
         </table>
-               
+
       </div>
     </div>
   </div>
