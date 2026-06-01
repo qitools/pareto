@@ -11,8 +11,8 @@ https://www.opencpu.org/jslib.html
 https://cdn.opencpu.org/
 -->
 
-<!-- jQuery: use the same version pattern that is working in the charts package -->
-<script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+<!-- jQuery: required before opencpu.js -->
+<script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
 
 <!-- tooltip -->
 <script type="text/javascript" src="qtip/jquery.qtip.min.js"></script>
@@ -21,16 +21,20 @@ https://cdn.opencpu.org/
 <!-- Bootstrap, if present in the package -->
 <script src="bootstrap/js/bootstrap.js"></script>
 
-<!-- OpenCPU library -->
-<script src="opencpu/opencpu-0.4.js"></script>
+<!-- OpenCPU library: load from the public CDN, with a stable archive fallback.
+     The older local path opencpu/opencpu-0.4.js did not load reliably on qitools.ocpu.io. -->
+<script src="https://cdn.opencpu.org/opencpu-0.4.js"></script>
+<script>
+if (!(window.ocpu && typeof window.ocpu.call === "function")) {
+  document.write('<script src="https://www.opencpu.org/js/archive/opencpu-0.4.js"><\/script>');
+}
+</script>
 
 <!-- jquery-csv from http://code.google.com/p/jquery-csv/ -->
 <script src="jquery-csv/jquery.csv.js"></script>
 
 <!-- jQuery UI from CDN; only used if successfully loaded -->
-<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"
-  integrity="sha256-lSjKY0/srUM9BE3dPm+c4fBo1dky2v27Gdjm2uoZaL0="
-  crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 
 <script>
 // Use this package's R functions when served by OpenCPU.
@@ -70,7 +74,7 @@ $(document).ready(function(){
 
   function drawplot(){
     if (!(window.ocpu && typeof ocpu.call === "function")) {
-      showPlotMessage("OpenCPU JavaScript library did not load. The page can edit examples, but it cannot create a plot.");
+      showPlotMessage("OpenCPU JavaScript library did not load from cdn.opencpu.org or the archive fallback. The page can edit examples, but it cannot create a plot.");
       return;
     }
 
